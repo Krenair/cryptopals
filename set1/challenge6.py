@@ -12,7 +12,7 @@ def base64decode(s):
             padding = 1
 
     r = []
-    s = s[:-padding] + ('A' * padding)
+    s = s[:len(s)-padding] + ('A' * padding)
     for c in range(0, len(s), 4):
         n = (b64chars.index(s[c]) << 18) + (b64chars.index(s[c+1]) << 12) + (b64chars.index(s[c+2]) << 6) + b64chars.index(s[c+3])
         r += [
@@ -21,7 +21,7 @@ def base64decode(s):
             n & 255
         ]
 
-    o = r[:-padding]
+    o = r[:len(r)-padding]
     return o
 
 def hamming(s1, s2): # step 2
