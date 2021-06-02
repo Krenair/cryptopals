@@ -38,14 +38,12 @@ if __name__ == "__main__":
     search_pt = b''
     for i in range(block_size):
         one_byte_short_pt = b"A" * (block_size - i - 1)
-        pt_ct_map = {}
+        one_byte_short_ct = encryption_oracle(prefix + one_byte_short_pt)
         for b in range(256):
             run_pt = one_byte_short_pt + ''.join(chr(c) for c in (search_pt[len(search_pt)-i:] + bytes([b]))).encode('charmap')
-            pt_ct_map[run_pt] = encryption_oracle(prefix + run_pt)
-
-        one_byte_short_ct = encryption_oracle(prefix + one_byte_short_pt)
-        for search_pt, search_ct in pt_ct_map.items():
+            search_ct = encryption_oracle(prefix + run_pt)
             if search_ct[block_size:block_size*2] == one_byte_short_ct[block_size:block_size*2]:
+                search_pt = run_pt
                 print('chosen', search_pt)
                 break
         else:

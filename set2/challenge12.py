@@ -41,17 +41,14 @@ if __name__ == "__main__":
 
     # step 3: Knowing the block size, craft an input block that is exactly 1 byte short (for instance, if the block size is 8 bytes, make "AAAAAAA"). Think about what the oracle function is going to put in that last byte position.
     one_byte_short_pt = b"A" * (block_size - 1)
+    one_byte_short_ct = encryption_oracle(one_byte_short_pt)
     # is it going to pad?
 
     # step 4:  Make a dictionary of every possible last byte by feeding different strings to the oracle; for instance, "AAAAAAAA", "AAAAAAAB", "AAAAAAAC", remembering the first block of each invocation.
-    pt_ct_map = {}
     for b in range(256):
-        run_pt = one_byte_short_pt + chr(b).encode('charmap')
-        pt_ct_map[run_pt] = encryption_oracle(run_pt)
-
-    # step 5: Match the output of the one-byte-short input to one of the entries in your dictionary. You've now discovered the first byte of unknown-string. 
-    one_byte_short_ct = encryption_oracle(one_byte_short_pt)
-    for search_pt, search_ct in pt_ct_map.items():
+        search_pt = one_byte_short_pt + chr(b).encode('charmap')
+        search_ct = encryption_oracle(search_pt)
+        # step 5: Match the output of the one-byte-short input to one of the entries in your dictionary. You've now discovered the first byte of unknown-string. 
         if search_ct[:block_size] == one_byte_short_ct[:block_size]:
             print('chosen', search_pt)
             break
@@ -60,14 +57,12 @@ if __name__ == "__main__":
 
     # step 6: Repeat for the next byte.
     one_byte_short_pt = b"A" * (block_size - 2)
-    pt_ct_map = {}
+    one_byte_short_ct = encryption_oracle(one_byte_short_pt)
     for b in range(256):
         run_pt = one_byte_short_pt + ''.join(chr(c) for c in (search_pt[len(search_pt)-1:] + bytes([b]))).encode('charmap')
-        pt_ct_map[run_pt] = encryption_oracle(run_pt)
-
-    one_byte_short_ct = encryption_oracle(one_byte_short_pt)
-    for search_pt, search_ct in pt_ct_map.items():
+        search_ct = encryption_oracle(run_pt)
         if search_ct[:block_size] == one_byte_short_ct[:block_size]:
+            search_pt = run_pt
             print('chosen', search_pt)
             break
     else:
@@ -76,14 +71,12 @@ if __name__ == "__main__":
     # my own step to prove we can do it for the whole first block:
     for i in range(2, block_size):
         one_byte_short_pt = b"A" * (block_size - i - 1)
-        pt_ct_map = {}
+        one_byte_short_ct = encryption_oracle(one_byte_short_pt)
         for b in range(256):
             run_pt = one_byte_short_pt + ''.join(chr(c) for c in (search_pt[len(search_pt)-i:] + bytes([b]))).encode('charmap')
-            pt_ct_map[run_pt] = encryption_oracle(run_pt)
-
-        one_byte_short_ct = encryption_oracle(one_byte_short_pt)
-        for search_pt, search_ct in pt_ct_map.items():
+            search_ct = encryption_oracle(run_pt)
             if search_ct[:block_size] == one_byte_short_ct[:block_size]:
+                search_pt = run_pt
                 print('chosen', search_pt)
                 break
         else:
