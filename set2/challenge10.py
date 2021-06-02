@@ -15,6 +15,7 @@ def xor(s0, s1):
         yield s0[i] ^ s1[i] # TODO: is using python's built-in XOR cheating?
 
 def decrypt_aes_cbc(ct, key, iv):
+    block_size = len(iv)
     for i in range(int(len(ct) / len(key))):
         ct_block = ct[i*len(key):i*len(key)+block_size]
         if i == 0:
