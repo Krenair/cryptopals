@@ -48,3 +48,20 @@ if __name__ == "__main__":
                 break
         else:
             assert False
+
+    found_bytes = search_pt
+    prefixed_ct = encryption_oracle(prefix)
+    # block 0 will be unknown_prefix + prefix, block 1 will be the first block we found. block 2 onwards will be the blocks we still have to decrypt
+    for target_block in range(2, len(prefixed_ct) // block_size):
+        for i in range(block_size):
+            one_byte_short_pt = b"A" * (block_size - i - 1)
+            ct_pt_map = {}
+            for b in range(256):
+                pt = found_bytes[1 - block_size:] + b.to_bytes(1, byteorder='big')
+                ct = encryption_oracle(prefix + pt)[block_size:block_size*2] # skip prefix block
+                ct_pt_map[ct] = pt
+
+            one_byte_short_ct = encryption_oracle(prefix + one_byte_short_pt)[block_size*target_block:block_size*(target_block+1)]
+            pt_found = ct_pt_map[one_byte_short_ct]
+            found_bytes += pt_found[-1].to_bytes(1, byteorder='big')
+            print('found', found_bytes)

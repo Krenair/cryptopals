@@ -81,4 +81,20 @@ if __name__ == "__main__":
                 break
         else:
             assert False
-    # TODO: can we take the ciphertext and plaintext of the first block we've now found, and use it to dervive the key to get at the rest?
+
+    found_bytes = search_pt
+    empty_ct = encryption_oracle(b'')
+    # block 0 will be the first block we found. block 1 onwards will be the blocks we still have to decrypt
+    for target_block in range(1, len(empty_ct) // block_size):
+        for i in range(block_size):
+            one_byte_short_pt = b"A" * (block_size - i - 1)
+            ct_pt_map = {}
+            for b in range(256):
+                pt = found_bytes[1 - block_size:] + b.to_bytes(1, byteorder='big')
+                ct = encryption_oracle(pt)[:block_size]
+                ct_pt_map[ct] = pt
+
+            one_byte_short_ct = encryption_oracle(one_byte_short_pt)[block_size*target_block:block_size*(target_block+1)]
+            pt_found = ct_pt_map[one_byte_short_ct]
+            found_bytes += pt_found[-1].to_bytes(1, byteorder='big')
+            print('found', found_bytes)
